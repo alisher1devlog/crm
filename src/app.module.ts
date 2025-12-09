@@ -1,16 +1,34 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BranchesModule } from './models/branches/branches.module';
-import { RoomsModule } from './models/rooms/rooms.module';
-import { CoursesService } from './models/courses/courses.service';
-import { CoursesModule } from './models/courses/courses.module';
-import { GroupsController } from './models/groups/groups.controller';
-import { GroupsModule } from './models/groups/groups.module';
+import { StaffModule } from './modules/staff/staff.module';
+import { StudentGroupModule } from './modules/student-group/student-group.module';
+import { TeacherGroupModule } from './modules/teacher-group/teacher-group.module';
+import { StudentModule } from './modules/student/student.module';
+import { TeacherModule } from './modules/teacher/teacher.module';
+import { GroupModule } from './modules/group/group.module';
+import { CourseModule } from './modules/course/course.module';
+import { RoomModule } from './modules/room/room.module';
+import { BranchModule } from './modules/branch/branch.module';
+import { MailerModule } from './common/mailer/mailer.module';
+import { MailerService } from './common/mailer/mailer.service';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [BranchesModule, RoomsModule, CoursesModule, GroupsModule],
-  controllers: [AppController, GroupsController],
-  providers: [AppService, CoursesService],
+  imports: [
+    BranchModule,
+    RoomModule,
+    CourseModule,
+    GroupModule,
+    TeacherModule,
+    StudentModule,
+    TeacherGroupModule,
+    StudentGroupModule,
+    StaffModule,
+    MailerModule,
+    PrismaModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService, MailerService],
 })
 export class AppModule {}
