@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum StaffRole {
+  ADMIN
+  MANAGER
+  RECEPTIONIST
+  TEACHER
+}
+
+model Branch {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      String  @unique
+  logoUrl   String? @map("logo_url")
+  address   String 
+  status    Status  @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  rooms Room[]
+  courses Course[]
+  groups Group[]
+  teachers Teacher[]
+  students Student[]
+  teacherGroups TeacherGroup[]
+  studentGroups StudentGroup[]
+  staff Staff[]
+
+  @@map("branches")
+}
+
+model Room {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  capacity  Int
+  branchId  String      @map("branch_id") @db.Uuid
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  groups Group[]
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("rooms")
+}
+
+model Course {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  price       Decimal  @db.Decimal(10, 2)
+  durationMonths Int      @map("duration_months")
+  durationHours  Float      @map("duration_hours")
+  level       CourseLevel
+  branchId    String       @map("branch_id") @db.Uuid
+  status    Status   @default(ACTIVE)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  groups Group[]
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("courses")
+}
+
+model Group {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  courseId  String      @map("course_id") @db.Uuid
+  roomId    String      @map("room_id") @db.Uuid
+  branchId  String      @map("branch_id") @db.Uuid
+  startLesson DateTime @map("start_lesson")
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  teacherGroups TeacherGroup[]
+  studentGroups StudentGroup[]
+
+  course Course @relation(fields: [courseId], references: [id])
+  room   Room   @relation(fields: [roomId], references: [id])
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("groups")
+  @@unique([name, courseId])
+}
+
+model Teacher {
+  id        String      @id @default(uuid()) @db.Uuid
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String   @unique
+  phone     String   @unique
+  password  String
+  photoUrl   String?  @map("photo_url")
+  branchId  String      @map("branch_id") @db.Uuid
+  profession String[]
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  teacherGroups TeacherGroup[]
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("teachers")
+}
+
+model Student {
+  id        String      @id @default(uuid()) @db.Uuid
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String   @unique
+  phone     String   @unique
+  password  String
+  photoUrl   String?  @map("photo_url")
+  branchId  String      @map("branch_id") @db.Uuid
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  studentGroups StudentGroup[]
+
+  branch Branch @relation(fields: [branchId], references: [id])
+  @@map("students")
+}
+
+model TeacherGroup {
+  id        String      @id @default(uuid()) @db.Uuid
+  teacherId String      @map("teacher_id") @db.Uuid
+  branchId  String      @map("branch_id") @db.Uuid
+  groupId   String      @map("group_id") @db.Uuid 
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  branch  Branch  @relation(fields: [branchId], references: [id])
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+  group   Group   @relation(fields: [groupId], references: [id])
+
+  @@map("teacher_groups")
+  @@unique([teacherId, groupId])
+}
+
+model StudentGroup {
+  id        String      @id @default(uuid()) @db.Uuid
+  studentId String      @map("student_id") @db.Uuid
+  groupId   String      @map("group_id") @db.Uuid
+  branchId  String      @map("branch_id") @db.Uuid
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  student Student @relation(fields: [studentId], references: [id])
+  group   Group   @relation(fields: [groupId], references: [id])
+  branch  Branch  @relation(fields: [branchId], references: [id])
+
+  @@map("student_groups")
+  @@unique([studentId, groupId])
+}
+
+model Staff {
+  id        String      @id @default(uuid()) @db.Uuid
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  phone     String   @unique
+  password  String
+  role      StaffRole
+  branchId  String      @map("branch_id") @db.Uuid
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("staffs")
+}
+
