@@ -21,12 +21,38 @@ enum StaffRole {
   ADMIN
   MANAGER
   RECEPTIONIST
-  TEACHER
+}
+
+model SuperAdmin{
+  id       String      @id @default(uuid()) @db.Uuid
+  fullName String   @map("full_name")
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("super_admins")
+}
+
+model Organization {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  logoUrl   String?  @map("logo_url")
+  address   String 
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  branches Branch[]
+  staffs Staff[]
+
+  @@map("organizations")
 }
 
 model Branch {
   id        String      @id @default(uuid()) @db.Uuid
   name      String  @unique
+  organizationId String @map("organization_id") @db.Uuid
   logoUrl   String? @map("logo_url")
   address   String 
   status    Status  @default(ACTIVE)
@@ -41,6 +67,8 @@ model Branch {
   teacherGroups TeacherGroup[]
   studentGroups StudentGroup[]
   staff Staff[]
+
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   @@map("branches")
 }
@@ -184,12 +212,14 @@ model Staff {
   phone     String   @unique
   password  String
   role      StaffRole
-  branchId  String      @map("branch_id") @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  branchId  String?      @map("branch_id") @db.Uuid
   status    Status   @default(ACTIVE)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  branch Branch @relation(fields: [branchId], references: [id])
+  branch Branch? @relation(fields: [branchId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("staffs")
 }
