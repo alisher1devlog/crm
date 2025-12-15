@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateBranchDto {
   @IsString()
@@ -8,8 +8,4 @@ export class CreateBranchDto {
   @IsString()
   @IsNotEmpty()
   address: string;
-
-  @IsString()
-  @IsOptional()
-  logoUrl?: string;
 }

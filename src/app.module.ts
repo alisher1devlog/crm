@@ -9,13 +9,17 @@ import { TeacherModule } from './modules/teacher/teacher.module';
 import { GroupModule } from './modules/group/group.module';
 import { CourseModule } from './modules/course/course.module';
 import { RoomModule } from './modules/room/room.module';
-import { BranchModule } from './modules/branch/branch.module';
 import { MailerModule } from './common/mailer/mailer.module';
 import { MailerService } from './common/mailer/mailer.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
+import { OrganizationModule } from './modules/organization/organization.module';
+import { BranchModule } from './modules/branch/branch.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     BranchModule,
     RoomModule,
     CourseModule,
@@ -27,6 +31,8 @@ import { PrismaModule } from './prisma/prisma.module';
     StaffModule,
     MailerModule,
     PrismaModule,
+    AuthModule,
+    OrganizationModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailerService],

@@ -3,9 +3,10 @@ import {
   Get,
   Post,
   Body,
+  Patch,
   Param,
   Delete,
-  Patch,
+  Req,
 } from '@nestjs/common';
 import { BranchService } from './branch.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
@@ -16,27 +17,27 @@ export class BranchController {
   constructor(private readonly branchService: BranchService) {}
 
   @Post()
-  create(@Body() createBranchDto: CreateBranchDto) {
-    return this.branchService.create(createBranchDto);
+  create(@Body() createBranchDto: CreateBranchDto, @Req() req: any) {
+    return this.branchService.create(createBranchDto, req.organizationId);
   }
 
-  @Get('all')
-  findAll() {
-    return this.branchService.findAll();
+  @Get()
+  findAll(@Req() req: any) {
+    return this.branchService.findAll(req.user.organizationId);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.branchService.findOne(id);
+    return this.branchService.findOne(+id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBranchDto: UpdateBranchDto) {
-    return this.branchService.update(id, updateBranchDto);
+    return this.branchService.update(+id, updateBranchDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.branchService.remove(id);
+    return this.branchService.remove(+id);
   }
 }
