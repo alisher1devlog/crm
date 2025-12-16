@@ -3,6 +3,7 @@ import {
   HttpException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
@@ -16,7 +17,7 @@ export class BranchService {
     try {
       const existBranch = await this.prisma.branch.findFirst({
         where: {
-          name: CreateBranchDto.name,
+          name: createBranchDto.name,
           organizationId,
         },
       });
@@ -33,26 +34,61 @@ export class BranchService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
 
-      console.error('Remove Error:', error);
+      console.error('Create Error:', error);
       throw new InternalServerErrorException('Branch yaratishda xatolik!');
     }
   }
 
   async findAll(organizationId: string) {
-    return this.prisma.branch.findMany({
-      where: { organizationId },
-    });
+    const branches = this.prisma.branch.findMany({ where: { organizationId } } );
+    console.log(branches)
+    return branches || [];
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} branch`;
+  async findOne(id: string, organizationId: string) {
+    try {
+      const branch = await this.prisma.branch.findFirst({where:{id, organizationId}})
+
+      if(!branch) throw new NotFoundException('Filial topilmadi yoki sizga tegishli emas!')
+        
+      return branch
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      console.log(`FindOne error`, error)
+      throw new InternalServerErrorException(`Filialni topishda xatolik`)
+    }
   }
 
-  update(id: number, updateBranchDto: UpdateBranchDto) {
-    return `This action updates a #${id} branch`;
+  async update(id: string, updateBranchDto: UpdateBranchDto, organizationId: string) {
+    try {
+      const branch = await this.prisma.branch.findFirst({where:{id, organizationId}})
+
+      if(!branch) throw new NotFoundException('Filial topilmadi yoki sizga tegishli emas!')
+
+      const updatedBranch = await this.prisma.branch.update({
+        where: {id},
+        data: updateBranchDto
+      })
+      return updatedBranch;
+    } catch (error) {
+      throw new InternalServerErrorException('Tahrirlashda xatolik')
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} branch`;
+  async remove(id: string, organizationId: string) {
+    await this.findOne(id, organizationId);
+
+    try {
+      const deletedBranch = await this.prisma.branch.delete({
+        where: { id },
+      });
+      return {
+        success: true,
+        message: 'muvaffaqiyatli ochirildi'
+      }
+    } catch (error) {
+      throw new BadRequestException('Bu filialni o\'chira olmaysiz, chunki ichida ma\'lumotlar bor!');
+    }
   }
 }
